@@ -1,0 +1,1200 @@
+---
+title: "GA summary SA app tidied 1Jan30Jun"
+author: "Dani Behonick"
+date: "7/13/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+install.packages("readr")
+install.packages("dplyr")
+install.packages("ggplot2")
+```
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+```
+```{r}
+USuser_pages_JanJun <- read.csv("SA app US users 1 Jan - 30 Jun 2020.csv",
+  skip = 1, head = FALSE, sep = ",")
+```
+**Data cleaning**
+```{r}
+#columns renamed
+colnames(USuser_pages_JanJun) <- c("City", "Region",
+  "Page_title_and_screen_name", "Active_users", "Screen_views_per_user", 
+  "User_engagement",	"Active_users1", "Screen_views_per_user1",	
+  "User_engagement1")
+```
+
+```{r}
+#duplicate columns removed from dataset
+USuser_pages_JanJun <- USuser_pages_JanJun %>% 
+  select(City, Region, Page_title_and_screen_name, Active_users, 
+  Screen_views_per_user, User_engagement)
+```
+
+```{r}
+#header rows removed from dataset
+USuser_pages_JanJun <- USuser_pages_JanJun %>% filter(
+  City != "# SA app", 
+  City != 
+  "# SA app US users 1 Jan - 30 Jun 2020 (DB)-SA app US users 1 Jan - 30 Jun 2020", 
+  City != "# 20200101-20200630", 
+  City != "# ----------------------------------------", City != "", 
+  City != "City", City != "Grand total")
+```
+
+```{r}
+nrow(USuser_pages_JanJun)
+```
+
+```{r}
+#data entries for non-US states removed from dataset
+USuser_pages_JanJun <- USuser_pages_JanJun %>% 
+  filter(Region == "Alabama" | Region == "Alaska" | Region == "Arizona" |
+  Region == "Arkansas" | Region == "California" | Region == "Colorado" | 
+  Region == "Connecticut" | Region == "Delaware" | 
+  Region == "District of Columbia" | Region == "Florida" | 
+  Region == "Georgia" | Region == "Hawaii" | Region == "Idaho" | 
+  Region == "Illinois" | Region == "Indiana" | Region == "Iowa" | 
+  Region == "Kansas" | Region == "Kentucky" | Region == "Louisiana" | 
+  Region == "Maine" | Region == "Maryland" | Region == "Massachusetts" | 
+  Region == "Michigan" | Region == "Minnesota" | Region == "Mississippi" | 
+  Region == "Missouri" | Region == "Montana" | Region == "Nebraska" | 
+  Region == "Nevada" | Region == "New Hampshire" | Region == "New Jersey" | 
+  Region == "New Mexico" | Region == "New York" | 
+  Region == "North Carolina" | Region == "North Dakota" | Region == "Ohio" | 
+  Region == "Oklahoma" | Region == "Oregon" | Region == "Pennsylvania" | 
+  Region == "Rhode Island" | Region == "South Carolina" | 
+  Region == "South Dakota" | Region == "Tennessee" | Region == "Texas" | 
+  Region == "Utah" | Region == "Vermont" | Region == "Virginia" | 
+  Region == "Washington" | Region == "West Virginia" | 
+  Region == "Wisconsin" | Region == "Wyoming" | Region == "(not set)")
+```
+
+```{r}
+#data entries for non-US cities removed from dataset
+USuser_pages_JanJun <- USuser_pages_JanJun %>% 
+  filter(City != "Bangui", City != "Bujumbura", City != "Douala", 
+  City != "Goma", City != "Havana", City != "Heredia", City != "Honiara",
+  City != "Kinshasa", City != "Kisangani", 
+  City != "Santiago De Los Caballeros", City != "Tegucigalpa", 
+  City != "Yaounde")
+```
+
+
+```{r}
+nrow(USuser_pages_JanJun)
+```
+```{r}
+#create dataset with "(not set)" entries removed, and dataset of "(not set)" entries
+USuser_pages_JanJun_set <- USuser_pages_JanJun %>% 
+  filter(City != "(not set)", Region != "(not set)", 
+  Page_title_and_screen_name != "(not set)")
+
+USuser_pages_JanJun_ns <- USuser_pages_JanJun %>% 
+  filter(City == "(not set)" | Region == "(not set)" | 
+  Page_title_and_screen_name == "(not set)")
+
+USuser_pages_JanJun_locns <- USuser_pages_JanJun %>% 
+  filter(City == "(not set)" | Region == "(not set)")
+```
+
+```{r}
+#how many data entries are impacted by "(not set)" fields?
+nrow(USuser_pages_JanJun)
+nrow(USuser_pages_JanJun_set)
+nrow(USuser_pages_JanJun_locns)
+```
+
+```{r}
+#check all columns of numerical data of all datasets to make sure R sees them as numbers.
+#it sees them as characters and so won't do calculations with them
+typeof(USuser_pages_JanJun$Active_users)
+typeof(USuser_pages_JanJun$Screen_views_per_user)
+typeof(USuser_pages_JanJun$User_engagement)
+typeof(USuser_pages_JanJun_set$Active_users)
+typeof(USuser_pages_JanJun_set$Screen_views_per_user)
+typeof(USuser_pages_JanJun_set$User_engagement)
+typeof(USuser_pages_JanJun_ns$Active_users)
+typeof(USuser_pages_JanJun_ns$Screen_views_per_user)
+typeof(USuser_pages_JanJun_ns$User_engagement)
+```
+```{r}
+#coerce all columns of numerical data to numerical class so R recognizes them as numbers
+#(and will use them in calculations) rather than characters
+USuser_pages_JanJun$Active_users <- 
+  as.numeric(USuser_pages_JanJun$Active_users)
+USuser_pages_JanJun$Screen_views_per_user <- 
+  as.numeric(USuser_pages_JanJun$Screen_views_per_user)
+USuser_pages_JanJun$User_engagement <- 
+  as.numeric(USuser_pages_JanJun$User_engagement)
+USuser_pages_JanJun_set$Active_users <- 
+  as.numeric(USuser_pages_JanJun_set$Active_users)
+USuser_pages_JanJun_set$Screen_views_per_user <- 
+  as.numeric(USuser_pages_JanJun_set$Screen_views_per_user)
+USuser_pages_JanJun_set$User_engagement <- 
+  as.numeric(USuser_pages_JanJun_set$User_engagement)
+USuser_pages_JanJun_ns$Active_users <- 
+  as.numeric(USuser_pages_JanJun_ns$Active_users)
+USuser_pages_JanJun_ns$Screen_views_per_user <- 
+  as.numeric(USuser_pages_JanJun_ns$Screen_views_per_user)
+USuser_pages_JanJun_ns$User_engagement <- 
+  as.numeric(USuser_pages_JanJun_ns$User_engagement)
+```
+
+```{r}
+#check again
+typeof(USuser_pages_JanJun$Active_users)
+typeof(USuser_pages_JanJun$Screen_views_per_user)
+typeof(USuser_pages_JanJun$User_engagement)
+typeof(USuser_pages_JanJun_set$Active_users)
+typeof(USuser_pages_JanJun_set$Screen_views_per_user)
+typeof(USuser_pages_JanJun_set$User_engagement)
+typeof(USuser_pages_JanJun_ns$Active_users)
+typeof(USuser_pages_JanJun_ns$Screen_views_per_user)
+typeof(USuser_pages_JanJun_ns$User_engagement)
+```
+```{r}
+write.csv(USuser_pages_JanJun, "USuser_pages_JanJun.csv")
+```
+
+```{r}
+#create version of USuser_pages_JanJun_set with data normalized to 2019 state population estimates
+statepop <- read.csv("nst-est2019-alldata.csv")
+statepop <- statepop %>%
+  select(NAME, CENSUS2010POP, POPESTIMATE2019)
+statepop <- statepop %>% 
+  filter(NAME == "Alabama" | NAME == "Alaska" | NAME == "Arizona" |
+  NAME == "Arkansas" | NAME == "California" | NAME == "Colorado" | 
+  NAME == "Connecticut" | NAME == "Delaware" | 
+  NAME == "District of Columbia" | NAME == "Florida" | 
+  NAME == "Georgia" | NAME == "Hawaii" | NAME == "Idaho" | 
+  NAME == "Illinois" | NAME == "Indiana" | NAME == "Iowa" | 
+  NAME == "Kansas" | NAME == "Kentucky" | NAME == "Louisiana" | 
+  NAME == "Maine" | NAME == "Maryland" | NAME == "Massachusetts" | 
+  NAME == "Michigan" | NAME == "Minnesota" | NAME == "Mississippi" | 
+  NAME == "Missouri" | NAME == "Montana" | NAME == "Nebraska" | 
+  NAME == "Nevada" | NAME == "New Hampshire" | NAME == "New Jersey" | 
+  NAME == "New Mexico" | NAME == "New York" | 
+  NAME == "North Carolina" | NAME == "North Dakota" | NAME == "Ohio" | 
+  NAME == "Oklahoma" | NAME == "Oregon" | NAME == "Pennsylvania" | 
+  NAME == "Rhode Island" | NAME == "South Carolina" | 
+  NAME == "South Dakota" | NAME == "Tennessee" | NAME == "Texas" | 
+  NAME == "Utah" | NAME == "Vermont" | NAME == "Virginia" | 
+  NAME == "Washington" | NAME == "West Virginia" | 
+  NAME == "Wisconsin" | NAME == "Wyoming")
+#columns renamed
+colnames(statepop) <- c("Region",	"CENSUS2010POP", "POPESTIMATE2019")
+#merge statepop with USuser_pages_JanJun_set
+USuser_pages_JanJun_set_norm <- USuser_pages_JanJun_set %>% inner_join(statepop, by = "Region")
+#create columns of normalized user data
+USuser_pages_JanJun_set_norm <- USuser_pages_JanJun_set_norm %>% 
+  mutate(Active_users_norm = Active_users/POPESTIMATE2019 * 100000, 
+  Screen_views_per_user_norm = Screen_views_per_user/POPESTIMATE2019 * 100000, 
+  User_engagement_norm = User_engagement/POPESTIMATE2019 * 100000)
+```
+
+**1.  SA app page use by user language (US)**  
+```{r language2}
+#create language-specific datasets based on page language data
+USuser_pages_JanJun_en2 <- USuser_pages_JanJun %>% filter(grepl("^en-",  
+  Page_title_and_screen_name)) %>% group_by(Page_title_and_screen_name)
+
+USuser_pages_JanJun_es2 <- USuser_pages_JanJun %>% filter(grepl("^es-",  
+  Page_title_and_screen_name)) %>% group_by(Page_title_and_screen_name)
+
+USuser_pages_JanJun_fr2 <- USuser_pages_JanJun %>% filter(grepl("^fr-",  
+  Page_title_and_screen_name)) %>% group_by(Page_title_and_screen_name)
+
+USuser_pages_JanJun_ig2 <- USuser_pages_JanJun %>% filter(grepl("^ig-",  
+  Page_title_and_screen_name)) %>% group_by(Page_title_and_screen_name)
+
+USuser_pages_JanJun_yo2 <- USuser_pages_JanJun %>% filter(grepl("^yo-",  
+  Page_title_and_screen_name)) %>% group_by(Page_title_and_screen_name)
+
+#create data summary for each language-specific dataset
+en_page_use <- sum(subset(USuser_pages_JanJun_en2)$Active_users) 
+en_user_engagement <- mean(subset(USuser_pages_JanJun_en2)$User_engagement)
+en_results <- c(en_page_use, en_user_engagement)
+
+es_page_use <- sum(subset(USuser_pages_JanJun_es2)$Active_users) 
+es_user_engagement <- mean(subset(USuser_pages_JanJun_es2)$User_engagement)
+es_results <- c(es_page_use, es_user_engagement)
+
+fr_page_use <- sum(subset(USuser_pages_JanJun_fr2)$Active_users) 
+fr_user_engagement <- mean(subset(USuser_pages_JanJun_fr2)$User_engagement)
+fr_results <- c(fr_page_use, fr_user_engagement)
+
+ig_page_use <- sum(subset(USuser_pages_JanJun_ig2)$Active_users) 
+ig_user_engagement <- mean(subset(USuser_pages_JanJun_ig2)$User_engagement)
+ig_results <- c(ig_page_use, ig_user_engagement)
+
+yo_page_use <- sum(subset(USuser_pages_JanJun_yo2)$Active_users) 
+yo_user_engagement <- mean(subset(USuser_pages_JanJun_yo2)$User_engagement)
+yo_results <- c(yo_page_use, yo_user_engagement)
+
+#create data summary for entries where page language (not set)
+USuser_pages_JanJun_pagenotset <- USuser_pages_JanJun %>% 
+  filter(Page_title_and_screen_name == "(not set)")
+ns_page_use <- sum(subset(USuser_pages_JanJun_pagenotset)$Active_users) 
+ns_user_engagement <- mean(subset(USuser_pages_JanJun_pagenotset)
+  $User_engagement)
+ns_results <- c(ns_page_use, ns_user_engagement)
+```
+
+
+```{r}
+#create dataframe from language-specific data summaries
+USuser_pages_JanJun_language <- rbind(en_results, es_results, fr_results, 
+  ig_results, yo_results, ns_results)
+colnames(USuser_pages_JanJun_language) = c("Total page use", 
+  "Mean user engagement (sec)")
+rownames(USuser_pages_JanJun_language) = c("English", "Spanish", "French",
+  "Igbo", "Yoruba", "(not set)")
+write.csv(USuser_pages_JanJun_language,'USuser_pages_JanJun_language.csv')
+```
+\newpage  
+**2.  SA app page use analysis of “(not set)” fields (US)**  
+```{r not set}
+USuser_pages_JanJun_notset <- USuser_pages_JanJun %>% 
+  filter(City == "(not set)" | Region == "(not set)" 
+  | Page_title_and_screen_name == "(not set)")
+write.csv(USuser_pages_JanJun_notset,'USuser_pages_JanJun_notset.csv')
+```
+
+```{r}
+#create data summary for data entries where City, Region, and/or 
+#Page title and screen name is "(not set)"
+allns_page_use <- sum(subset(USuser_pages_JanJun_notset)$Active_users) 
+allns_user_engagement <- mean(subset(USuser_pages_JanJun_notset)
+  $User_engagement)
+allns_results <- c(allns_page_use, allns_user_engagement)
+USuser_pages_JanJun_allns <- rbind(allns_results)
+colnames(USuser_pages_JanJun_allns) = c("Total page use", 
+  "Mean user engagement (sec)")
+rownames(USuser_pages_JanJun_allns) = "(not set)"
+write.csv(USuser_pages_JanJun_allns, "USuser_pages_JanJun_allns.csv")
+```
+\newpage 
+**3.  SA app page language analysis by user location (US)**  
+```{r, including ns}
+#plots of page language x user location, including (not set) data entries
+#jpeg('RegionxPageuseEnJanJun.jpg')
+ggplot(USuser_pages_JanJun_en2, aes(x = Region, y = Active_users)) + 
+  geom_bar(stat = "identity", fill = "darkorchid4") + 
+  labs(x = "User location", y = "Page use", 
+  title = "SA app use in English by user location (1 Jan 2020 - 30 Jun 2020)") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+#jpeg('RegionxPageuseEsJanJun.jpg')
+ggplot(USuser_pages_JanJun_es2, aes(x = Region, y = Active_users)) + 
+  geom_bar(stat = "identity", fill = "darkorchid4") + 
+  labs(x = "User location", y = "Page Use", 
+  title = "SA app use in Spanish by user location (1 Jan 2020 - 30 Jun 2020)") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+#jpeg('RegionxPageuseFrJanJun.jpg')
+ggplot(USuser_pages_JanJun_fr2, aes(x = Region, y = Active_users)) + 
+  geom_bar(stat = "identity", fill = "darkorchid4") + 
+  labs(x = "User location", y = "Page use", 
+  title = "SA app use in French by user location (1 Jan 2020 - 30 Jun 2020)") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+#jpeg('RegionxPageuseIgJanJun.jpg')
+ggplot(USuser_pages_JanJun_ig2, aes(x = Region, y = Active_users)) + 
+  geom_bar(stat = "identity", fill = "darkorchid4") + 
+  labs(x = "User location", y = "Page use", 
+  title = "SA app use in Igbo by user location (1 Jan 2020 - 30 Jun 2020)") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+#jpeg('RegionxPageuseYoJanJun.jpg')
+ggplot(USuser_pages_JanJun_yo2, aes(x = Region, y = Active_users)) + 
+  geom_bar(stat = "identity", fill = "darkorchid4") + 
+  labs(x = "User location", y = "Page use", 
+  title = "SA app use in Yoruba by user location (1 Jan 2020 - 30 Jun 2020)") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+```
+
+```{r}
+#create langugage-specific datasets that eliminate data entries with "(not set)" in
+#City, Region, or Page title and screen name field
+USuser_pages_JanJun_en3 <- USuser_pages_JanJun_set %>% filter(grepl("^en-",  
+  Page_title_and_screen_name)) %>% group_by(Page_title_and_screen_name)
+
+USuser_pages_JanJun_es3 <- USuser_pages_JanJun_set %>% filter(grepl("^es-",  
+  Page_title_and_screen_name)) %>% group_by(Page_title_and_screen_name)
+
+USuser_pages_JanJun_fr3 <- USuser_pages_JanJun_set %>% filter(grepl("^fr-",  
+  Page_title_and_screen_name)) %>% group_by(Page_title_and_screen_name)
+
+USuser_pages_JanJun_ig3 <- USuser_pages_JanJun_set %>% filter(grepl("^ig-",  
+  Page_title_and_screen_name)) %>% group_by(Page_title_and_screen_name)
+
+USuser_pages_JanJun_yo3 <- USuser_pages_JanJun_set %>% filter(grepl("^yo-",  
+  Page_title_and_screen_name)) %>% group_by(Page_title_and_screen_name)
+
+
+en_page_use3 <- sum(subset(USuser_pages_JanJun_en3)$Active_users) 
+en_user_engagement3 <- mean(subset(USuser_pages_JanJun_en3)$User_engagement)
+en_results3 <- c(en_page_use3, en_user_engagement3)
+
+es_page_use3 <- sum(subset(USuser_pages_JanJun_es3)$Active_users) 
+es_user_engagement3 <- mean(subset(USuser_pages_JanJun_es3)$User_engagement)
+es_results3 <- c(es_page_use3, es_user_engagement3)
+
+fr_page_use3 <- sum(subset(USuser_pages_JanJun_fr3)$Active_users) 
+fr_user_engagement3 <- mean(subset(USuser_pages_JanJun_fr3)$User_engagement)
+fr_results3 <- c(fr_page_use3, fr_user_engagement3)
+
+ig_page_use3 <- sum(subset(USuser_pages_JanJun_ig3)$Active_users) 
+ig_user_engagement3 <- mean(subset(USuser_pages_JanJun_ig3)$User_engagement)
+ig_results3 <- c(ig_page_use3, ig_user_engagement3)
+
+yo_page_use3 <- sum(subset(USuser_pages_JanJun_yo3)$Active_users) 
+yo_user_engagement3 <- mean(subset(USuser_pages_JanJun_yo3)$User_engagement)
+yo_results3 <- c(yo_page_use3, yo_user_engagement3)
+```
+
+```{r, phones with set locations only}
+#plots of page language x user location, excluding (not set) data entries
+#jpeg('RegionxPageuseEnJanJun3.jpg')
+ggplot(USuser_pages_JanJun_en3, aes(x = Region, y = Active_users)) + 
+  geom_bar(stat = "identity", fill = "darkorchid4") + 
+  labs(x = "User location", y = "Page use", 
+  title = "SA app use in English by user location, set locations only 
+  (1 Jan 2020 - 30 Jun 2020)") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+#jpeg('RegionxPageuseEsJanJun3.jpg')
+ggplot(USuser_pages_JanJun_es3, aes(x = Region, y = Active_users)) + 
+  geom_bar(stat = "identity", fill = "darkorchid4") + 
+  labs(x = "User location", y = "Page use", 
+  title = "SA app use in Spanish by user location, set locations only 
+  (1 Jan 2020 - 30 Jun 2020)") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+#jpeg('RegionxPageuseFrJanJun3.jpg')
+ggplot(USuser_pages_JanJun_fr3, aes(x = Region, y = Active_users)) + 
+  geom_bar(stat = "identity", fill = "darkorchid4") + 
+  labs(x = "User location", y = "Page use", 
+  title = "SA app use in French by user location, set locations only 
+  (1 Jan 2020 - 30 Jun 2020)") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+#jpeg('RegionxPageuseIgJanJun3.jpg')
+ggplot(USuser_pages_JanJun_ig3, aes(x = Region, y = Active_users)) + 
+  geom_bar(stat = "identity", fill = "darkorchid4") + 
+  labs(x = "User location", y = "Page use", 
+  title = "SA app use in Igbo by user location, set locations only 
+  (1 Jan 2020 - 30 Jun 2020)") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+#jpeg('RegionxPageuseYoJanJun3.jpg')
+ggplot(USuser_pages_JanJun_yo3, aes(x = Region, y = Active_users)) + 
+  geom_bar(stat = "identity", fill = "darkorchid4") + 
+  labs(x = "User location", y = "Page use", 
+  title = "SA app use in Yoruba by user location, set locations only 
+  (1 Jan 2020 - 30 Jun 2020)") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+```
+
+*replot using data normalized by 2019 estimated state population*
+```{r}
+#create lanugage-specific datasets from data normalized to 2019 estimated state population
+USuser_pages_JanJun_en4 <- USuser_pages_JanJun_set_norm %>% filter(grepl("^en-",  
+  Page_title_and_screen_name)) %>% group_by(Page_title_and_screen_name)
+
+USuser_pages_JanJun_es4 <- USuser_pages_JanJun_set_norm %>% filter(grepl("^es-",  
+  Page_title_and_screen_name)) %>% group_by(Page_title_and_screen_name)
+
+USuser_pages_JanJun_fr4 <- USuser_pages_JanJun_set_norm %>% filter(grepl("^fr-",  
+  Page_title_and_screen_name)) %>% group_by(Page_title_and_screen_name)
+
+USuser_pages_JanJun_ig4 <- USuser_pages_JanJun_set_norm %>% filter(grepl("^ig-",  
+  Page_title_and_screen_name)) %>% group_by(Page_title_and_screen_name)
+
+USuser_pages_JanJun_yo4 <- USuser_pages_JanJun_set_norm %>% filter(grepl("^yo-",  
+  Page_title_and_screen_name)) %>% group_by(Page_title_and_screen_name)
+
+
+en_page_use4 <- sum(subset(USuser_pages_JanJun_en4)$Active_users) 
+en_user_engagement4 <- mean(subset(USuser_pages_JanJun_en4)$User_engagement)
+en_results4 <- c(en_page_use4, en_user_engagement4)
+
+es_page_use4 <- sum(subset(USuser_pages_JanJun_es4)$Active_users) 
+es_user_engagement4 <- mean(subset(USuser_pages_JanJun_es4)$User_engagement)
+es_results4 <- c(es_page_use4, es_user_engagement4)
+
+fr_page_use4 <- sum(subset(USuser_pages_JanJun_fr4)$Active_users) 
+fr_user_engagement4 <- mean(subset(USuser_pages_JanJun_fr4)$User_engagement)
+fr_results4 <- c(fr_page_use4, fr_user_engagement4)
+
+ig_page_use4 <- sum(subset(USuser_pages_JanJun_ig4)$Active_users) 
+ig_user_engagement4 <- mean(subset(USuser_pages_JanJun_ig4)$User_engagement)
+ig_results4 <- c(ig_page_use4, ig_user_engagement4)
+
+yo_page_use4 <- sum(subset(USuser_pages_JanJun_yo4)$Active_users) 
+yo_user_engagement4 <- mean(subset(USuser_pages_JanJun_yo4)$User_engagement)
+yo_results4 <- c(yo_page_use4, yo_user_engagement4)
+```
+
+```{r}
+#jpeg('RegionxPageuseEnJanJun4.jpg')
+ggplot(USuser_pages_JanJun_en4, aes(x = Region, y = Active_users_norm)) + 
+  geom_bar(stat = "identity", fill = "cadetblue4") + 
+  labs(x = "User location", y = "Page use per 100,000 people", 
+  title = "SA app use in English by user location, set locations only 
+  (1 Jan 2020 - 30 Jun 2020), per 100,000 people") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+#jpeg('RegionxPageuseEsJanJun4.jpg')
+ggplot(USuser_pages_JanJun_es4, aes(x = Region, y = Active_users_norm)) + 
+  geom_bar(stat = "identity", fill = "cadetblue4") + 
+  labs(x = "User location", y = "Page use per 100,000 people", 
+  title = "SA app use in Spanish by user location, set locations only 
+  (1 Jan 2020 - 30 Jun 2020), per 100,000 people") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+#jpeg('RegionxPageuseFrJanJun4.jpg')
+ggplot(USuser_pages_JanJun_fr4, aes(x = Region, y = Active_users_norm)) + 
+  geom_bar(stat = "identity", fill = "cadetblue4") + 
+  labs(x = "User location", y = "Page use per 100,000 people", 
+  title = "SA app use in French by user location, set locations only 
+  (1 Jan 2020 - 30 Jun 2020), per 100,000 people") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+#jpeg('RegionxPageuseIgJanJun4.jpg')
+ggplot(USuser_pages_JanJun_ig4, aes(x = Region, y = Active_users_norm)) + 
+  geom_bar(stat = "identity", fill = "cadetblue4") + 
+  labs(x = "User location", y = "Page use per 100,000 people", 
+  title = "SA app use in Igbo by user location, set locations only 
+  (1 Jan 2020 - 30 Jun 2020), per 100,000 people") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+#jpeg('RegionxPageuseYoJanJun4.jpg')
+ggplot(USuser_pages_JanJun_yo4, aes(x = Region, y = Active_users_norm)) + 
+  geom_bar(stat = "identity", fill = "cadetblue4") + 
+  labs(x = "User location", y = "Page use per 100,000 people", 
+  title = "SA app use in Yoruba by user location, set locations only 
+  (1 Jan 2020 - 30 Jun 2020), per 100,000 people") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+```
+
+
+\newpage
+**4.  Investigating possible COVID-related SA app usage**
+```{r}
+COVID1Mar1Apr <- read.csv("COVID Regions 1Mar20-1Apr20.csv", 
+  skip = 1, head = FALSE, sep = ",")
+```
+
+```{r}
+#columns renamed
+colnames(COVID1Mar1Apr) <- c("Region",	"Active_users", 
+  "Screen_views_per_user", "User_engagement",	"Active_users1",	
+  "Screen_views_per_user1",	"User_engagement1")
+```
+
+```{r}
+#duplicate columns removed from dataset
+COVID1Mar1Apr <- COVID1Mar1Apr %>% 
+  select(Region, Active_users, Screen_views_per_user, User_engagement)
+```
+
+```{r}
+#header rows removed from dataset
+COVID1Mar1Apr <- COVID1Mar1Apr %>% 
+  filter(Region != "# SA app", 
+  Region != "# COVID Regions Pages 1Mar20-1Apr20 (DB)-COVID Regions 1Mar20-1Apr20", 
+  Region != "# 20200301-20200401", 
+  Region != "# ----------------------------------------", 
+  Region != "Segment",Region != "Region", Region != "", 
+  Region != "Grand total")
+```
+
+```{r}
+COVID1Mar1Apr_notset <- COVID1Mar1Apr %>% filter(Region == "(not set)")
+nrow(COVID1Mar1Apr_notset)
+```
+
+
+```{r}
+#data entries for non-US states, and where region not set, removed from dataset
+COVID1Mar1Apr <- COVID1Mar1Apr %>% 
+  filter(Region == "Alabama" | Region == "Alaska" | Region == "Arizona" |
+  Region == "Arkansas" | Region == "California" | Region == "Colorado" | 
+  Region == "Connecticut" | Region == "Delaware" | 
+  Region == "District of Columbia" | Region == "Florida" | 
+  Region == "Georgia" | Region == "Hawaii" | Region == "Idaho" | 
+  Region == "Illinois" | Region == "Indiana" | Region == "Iowa" | 
+  Region == "Kansas" | Region == "Kentucky" | Region == "Louisiana" | 
+  Region == "Maine" | Region == "Maryland" | Region == "Massachusetts" | 
+  Region == "Michigan" | Region == "Minnesota" | Region == "Mississippi" | 
+  Region == "Missouri" | Region == "Montana" | Region == "Nebraska" | 
+  Region == "Nevada" | Region == "New Hampshire" | Region == "New Jersey" | 
+  Region == "New Mexico" | Region == "New York" | 
+  Region == "North Carolina" | Region == "North Dakota" | Region == "Ohio" | 
+  Region == "Oklahoma" | Region == "Oregon" | Region == "Pennsylvania" | 
+  Region == "Rhode Island" | Region == "South Carolina" | 
+  Region == "South Dakota" | Region == "Tennessee" | Region == "Texas" | 
+  Region == "Utah" | Region == "Vermont" | Region == "Virginia" | 
+  Region == "Washington" | Region == "West Virginia" | 
+  Region == "Wisconsin" | Region == "Wyoming")
+```
+
+```{r}
+#checking whether R recognizes numerical data in dataset as numbers
+typeof(COVID1Mar1Apr$Active_users)
+typeof(COVID1Mar1Apr$Screen_views_per_user)
+typeof(COVID1Mar1Apr$User_engagement)
+```
+
+```{r}
+#NOPE SURE DOESN'T
+#coercing columns of numerical data to numerical objects in R so R will use them in calculations
+COVID1Mar1Apr$Active_users <- 
+  as.numeric(COVID1Mar1Apr$Active_users)
+COVID1Mar1Apr$Screen_views_per_user <- 
+  as.numeric(COVID1Mar1Apr$Screen_views_per_user)
+COVID1Mar1Apr$User_engagement <- 
+  as.numeric(COVID1Mar1Apr$User_engagement)
+```
+
+```{r}
+#recheck
+typeof(COVID1Mar1Apr$Active_users)
+typeof(COVID1Mar1Apr$Screen_views_per_user)
+typeof(COVID1Mar1Apr$User_engagement)
+```
+
+```{r}
+#list of restricted states according to Jones et al., 2020
+COVID1Mar1Aprrestr <- COVID1Mar1Apr %>% 
+  filter(Region == "Alabama" | Region == "Alaska" | Region == "Arkansas" | 
+  Region == "Iowa"| Region == "Kentucky" | Region == "Louisiana" | 
+  Region == "Ohio" | Region == "Oklahoma" | Region == "Tennessee" | 
+  Region == "Texas" | Region == "West Virginia")
+```
+
+```{r}
+COVID1Mar1Aprunrestr <- COVID1Mar1Apr %>% 
+  filter(Region != "Alabama", Region != "Alaska", Region != "Arkansas", 
+  Region != "Iowa", Region != "Kentucky", Region != "Louisiana", 
+  Region != "Ohio", Region != "Oklahoma", Region != "Tennessee", 
+  Region != "Texas", Region != "West Virginia")
+```
+
+```{r}
+#jpeg('RegionxActiveusersrestr1Mar1Apr.jpg')
+ggplot(COVID1Mar1Aprrestr, aes(x = Region, 
+  y = Active_users)) + geom_bar(stat = "identity", fill = "turquoise4") + 
+  labs(x = "User location", y = "Active users", title = 
+  "SA app use in US states with COVID-related abortion restrictions 
+  (1 Mar 2020 - 1 Apr 2020)")
+```
+
+```{r}
+#jpeg('RegionxActiveusersunr1Mar1Apr.jpg')
+ggplot(COVID1Mar1Aprunrestr, aes(x = Region, y = Active_users)) + 
+  geom_bar(stat = "identity", fill = "turquoise4") + 
+  labs(x = "User location", y = "Active users", 
+  title = "SA app use in US states without COVID-related abortion restrictions
+  (1 Mar 2020 - 1 Apr 2020)") + theme(axis.text.x = element_text(angle = 45, 
+  vjust = 1, hjust=1))
+```
+
+```{r}
+#jpeg('RegionxScreenviewsrestr1Mar1Apr.jpg')
+ggplot(COVID1Mar1Aprrestr, aes(x = Region, y = Screen_views_per_user)) + 
+  geom_bar(stat = "identity", fill = "hotpink4") + labs(x = "User location", 
+  y = "Screen views per user", 
+  title = "SA app use in US states with COVID-related abortion restrictions 
+  (1 Mar 2020 - 1 Apr 2020)")
+```
+
+```{r}
+#jpeg('RegionxScreenviewsunr1Mar1Apr.jpg')
+ggplot(COVID1Mar1Aprunrestr, aes(x = Region, y = Screen_views_per_user)) + 
+  geom_bar(stat = "identity", fill = "hotpink4") + labs(x = "User location", 
+  y = "Screen views per user", 
+  title = "SA app use in US states without COVID-related abortion restrictions 
+  (1 Mar 2020 - 1 Apr 2020)") + theme(axis.text.x = element_text(angle = 45, 
+  vjust = 1, hjust=1))
+```
+
+```{r}
+#jpeg('RegionxUserengagementrestr1Mar1Apr.jpg')
+ggplot(COVID1Mar1Aprrestr, aes(x = Region, y = User_engagement)) + 
+  geom_bar(stat = "identity", fill = "slategrey") + labs(x = "User location",
+  y = "User engagement (sec)", 
+  title = "SA app use in US states with COVID-related abortion restrictions
+  (1 Mar 2020 - 1 Apr 2020)")
+```
+
+```{r}
+#jpeg('RegionxUserengagementunr1Mar1Apr.jpg')
+ggplot(COVID1Mar1Aprunrestr, aes(x = Region, y = User_engagement)) + 
+  geom_bar(stat = "identity", fill = "slategrey") + labs(x = "User location",
+  y = "User engagement (sec)", title = 
+  "SA app use in US states without COVID-related abortion restrictions
+  (1 Mar 2020 - 1 Apr 2020)") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+```
+
+```{r}
+COVID1Apr1May <- read.csv("COVID Regions 1Apr20-1May20.csv", 
+  skip = 1, head = FALSE, sep = ",")
+```
+
+```{r}
+#columns renamed
+colnames(COVID1Apr1May) <- c("Region",	"Active_users", 
+  "Screen_views_per_user", "User_engagement",	"Active_users1", 
+  "Screen_views_per_user1",	"User_engagement1")
+```
+
+```{r}
+#duplicate columns removed from dataset
+COVID1Apr1May <- COVID1Apr1May %>% 
+  select(Region, Active_users, Screen_views_per_user, User_engagement)
+```
+
+```{r}
+#header rows removed from dataset
+COVID1Apr1May <- COVID1Apr1May %>% 
+  filter(Region != "# SA app", 
+  Region != "# COVID Regions Pages 1Apr20-1May20 (DB)-COVID Regions 1Apr20-1May20", 
+  Region != "# 20200401-20200501", 
+  Region != "# ----------------------------------------", 
+  Region != "Segment", Region != "Region", Region != "", 
+  Region != "Grand total")
+```
+
+```{r}
+#data entries for non-US states, and where region not set, removed from dataset
+COVID1Apr1May <- COVID1Apr1May %>% 
+  filter(Region == "Alabama" | Region == "Alaska" | Region == "Arizona" |
+  Region == "Arkansas" | Region == "California" | Region == "Colorado" | 
+  Region == "Connecticut" | Region == "Delaware" | 
+  Region == "District of Columbia" | Region == "Florida" | 
+  Region == "Georgia" | Region == "Hawaii" | Region == "Idaho" | 
+  Region == "Illinois" | Region == "Indiana" | Region == "Iowa" | 
+  Region == "Kansas" | Region == "Kentucky" | Region == "Louisiana" | 
+  Region == "Maine" | Region == "Maryland" | Region == "Massachusetts" | 
+  Region == "Michigan" | Region == "Minnesota" | Region == "Mississippi" | 
+  Region == "Missouri" | Region == "Montana" | Region == "Nebraska" | 
+  Region == "Nevada" | Region == "New Hampshire" | Region == "New Jersey" | 
+  Region == "New Mexico" | Region == "New York" | 
+  Region == "North Carolina" | Region == "North Dakota" | Region == "Ohio" | 
+  Region == "Oklahoma" | Region == "Oregon" | Region == "Pennsylvania" | 
+  Region == "Rhode Island" | Region == "South Carolina" | 
+  Region == "South Dakota" | Region == "Tennessee" | Region == "Texas" | 
+  Region == "Utah" | Region == "Vermont" | Region == "Virginia" | 
+  Region == "Washington" | Region == "West Virginia" | 
+  Region == "Wisconsin" | Region == "Wyoming")
+```
+
+```{r}
+#checking whether R recognizes numerical data in dataset as numbers
+typeof(COVID1Apr1May$Active_users)
+typeof(COVID1Apr1May$Screen_views_per_user)
+typeof(COVID1Apr1May$User_engagement)
+```
+
+```{r}
+#coerce to numerical
+COVID1Apr1May$Active_users <- 
+  as.numeric(COVID1Apr1May$Active_users)
+COVID1Apr1May$Screen_views_per_user <- 
+  as.numeric(COVID1Apr1May$Screen_views_per_user)
+COVID1Apr1May$User_engagement <- 
+  as.numeric(COVID1Apr1May$User_engagement)
+```
+
+```{r}
+#recheck
+typeof(COVID1Apr1May$Active_users)
+typeof(COVID1Apr1May$Screen_views_per_user)
+typeof(COVID1Apr1May$User_engagement)
+```
+
+```{r}
+#list of restricted states according to Jones et al., 2020
+COVID1Apr1Mayrestr <- COVID1Apr1May %>% 
+  filter(Region == "Alabama" | Region == "Alaska" | Region == "Arkansas" | 
+  Region == "Iowa"| Region == "Kentucky" | Region == "Louisiana" | 
+  Region == "Ohio" | Region == "Oklahoma" | Region == "Tennessee" | 
+  Region == "Texas" | Region == "West Virginia")
+```
+
+```{r}
+COVID1Apr1Mayunrestr <- COVID1Apr1May %>% 
+  filter(Region != "Alabama", Region != "Alaska", Region != "Arkansas", 
+  Region != "Iowa", Region != "Kentucky", Region != "Louisiana", 
+  Region != "Ohio", Region != "Oklahoma", Region != "Tennessee", 
+  Region != "Texas", Region != "West Virginia")
+```
+
+```{r}
+#jpeg('RegionxActiveusersrestr1Apr1May.jpg')
+ggplot(COVID1Apr1Mayrestr, aes(x = Region, y = Active_users)) + 
+  geom_bar(stat = "identity", fill = "turquoise4") + 
+  labs(x = "User location", y = "Active users", 
+  title = "SA app use in US states with COVID-related abortion restrictions
+  (1 Apr 2020 - 1 May 2020)")
+
+#jpeg('RegionxScreenviewsrestr1Apr1May.jpg')
+ggplot(COVID1Apr1Mayrestr, aes(x = Region, y = Screen_views_per_user)) + 
+  geom_bar(stat = "identity", fill = "hotpink4") + labs(x = "User location", 
+  y = "Screen views per user", 
+  title = "SA app use in US states with COVID-related abortion restrictions
+  (1 Apr 2020 - 1 May 2020)")
+
+#jpeg('RegionxUserengagementrestr1Apr1May.jpg')
+ggplot(COVID1Apr1Mayrestr, aes(x = Region, y = User_engagement)) + 
+  geom_bar(stat = "identity", fill = "slategrey") + labs(x = "User location",
+  y = "User engagement (sec)", 
+  title = "SA app use in US states with COVID-related abortion restrictions 
+  (1 Apr 2020 - 1 May 2020)")
+```
+
+```{r}
+#jpeg('RegionxActiveusersunrestr1Apr1May.jpg')
+ggplot(COVID1Apr1Mayunrestr, aes(x = Region, y = Active_users)) + 
+  geom_bar(stat = "identity", fill = "turquoise4") + 
+  labs(x = "User location", y = "Active users", 
+  title = "SA app use in US states without COVID-related abortion restrictions 
+  (1 Apr 2020 - 1 May 2020)") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+#jpeg('RegionxScreenviewsunrestr1Apr1May.jpg')
+ggplot(COVID1Apr1Mayunrestr, aes(x = Region, y = Screen_views_per_user)) + 
+  geom_bar(stat = "identity", fill = "hotpink4") + labs(x = "User location", 
+  y = "Screen views per user", 
+  title = "SA app use in US states without COVID-related abortion restrictions 
+  (1 Apr 2020 - 1 May 2020)") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+#jpeg('RegionxUserengagementunrestr1Apr1May.jpg')
+ggplot(COVID1Apr1Mayunrestr, aes(x = Region, y = User_engagement)) + 
+  geom_bar(stat = "identity", fill = "slategrey") + labs(x = "User location",
+  y = "User engagement (sec)", 
+  title = "SA app use in US states without COVID-related abortion restrictions 
+  (1 Apr 2020 - 1 May 2020)") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+```
+
+*normalize data to 2019 state population estimates*
+```{r}
+statepop <- read.csv("nst-est2019-alldata.csv")
+```
+
+```{r}
+statepop <- statepop %>%
+  select(NAME, CENSUS2010POP, POPESTIMATE2019)
+```
+
+```{r}
+statepop <- statepop %>% 
+  filter(NAME == "Alabama" | NAME == "Alaska" | NAME == "Arizona" |
+  NAME == "Arkansas" | NAME == "California" | NAME == "Colorado" | 
+  NAME == "Connecticut" | NAME == "Delaware" | 
+  NAME == "District of Columbia" | NAME == "Florida" | 
+  NAME == "Georgia" | NAME == "Hawaii" | NAME == "Idaho" | 
+  NAME == "Illinois" | NAME == "Indiana" | NAME == "Iowa" | 
+  NAME == "Kansas" | NAME == "Kentucky" | NAME == "Louisiana" | 
+  NAME == "Maine" | NAME == "Maryland" | NAME == "Massachusetts" | 
+  NAME == "Michigan" | NAME == "Minnesota" | NAME == "Mississippi" | 
+  NAME == "Missouri" | NAME == "Montana" | NAME == "Nebraska" | 
+  NAME == "Nevada" | NAME == "New Hampshire" | NAME == "New Jersey" | 
+  NAME == "New Mexico" | NAME == "New York" | 
+  NAME == "North Carolina" | NAME == "North Dakota" | NAME == "Ohio" | 
+  NAME == "Oklahoma" | NAME == "Oregon" | NAME == "Pennsylvania" | 
+  NAME == "Rhode Island" | NAME == "South Carolina" | 
+  NAME == "South Dakota" | NAME == "Tennessee" | NAME == "Texas" | 
+  NAME == "Utah" | NAME == "Vermont" | NAME == "Virginia" | 
+  NAME == "Washington" | NAME == "West Virginia" | 
+  NAME == "Wisconsin" | NAME == "Wyoming")
+```
+
+```{r}
+#columns renamed
+colnames(statepop) <- c("Region",	"CENSUS2010POP", "POPESTIMATE2019")
+```
+
+
+```{r}
+#merge statepop with COVID1Mar1Apr and with 1Apr1May
+COVID1Mar1Apr_norm <- COVID1Mar1Apr %>% inner_join(statepop, by = "Region")
+COVID1Apr1May_norm <- COVID1Apr1May %>% inner_join(statepop, by = "Region")
+```
+
+```{r}
+COVID1Mar1Apr_norm <- COVID1Mar1Apr_norm %>% mutate(Active_users_norm =
+  Active_users/POPESTIMATE2019 * 100000, 
+  Screen_views_per_user_norm = Screen_views_per_user/POPESTIMATE2019 * 100000, 
+  User_engagement_norm = User_engagement/POPESTIMATE2019 * 100000)
+
+COVID1Apr1May_norm <- COVID1Apr1May_norm %>% mutate(Active_users_norm = 
+  Active_users/POPESTIMATE2019 * 100000, 
+  Screen_views_per_user_norm = Screen_views_per_user/POPESTIMATE2019 * 100000, 
+  User_engagement_norm = User_engagement/POPESTIMATE2019 * 100000)
+```
+
+```{r}
+#list of restricted states according to Jones et al., 2020
+COVID1Mar1Aprrestr_norm <- COVID1Mar1Apr_norm %>% 
+  filter(Region == "Alabama" | Region == "Alaska" | Region == "Arkansas" | 
+  Region == "Iowa"| Region == "Kentucky" | Region == "Louisiana" | 
+  Region == "Ohio" | Region == "Oklahoma" | Region == "Tennessee" | 
+  Region == "Texas" | Region == "West Virginia")
+
+COVID1Apr1Mayrestr_norm <- COVID1Apr1May_norm %>% 
+  filter(Region == "Alabama" | Region == "Alaska" | Region == "Arkansas" | 
+  Region == "Iowa"| Region == "Kentucky" | Region == "Louisiana" | 
+  Region == "Ohio" | Region == "Oklahoma" | Region == "Tennessee" | 
+  Region == "Texas" | Region == "West Virginia")
+```
+
+```{r}
+COVID1Mar1Aprunrestr_norm <- COVID1Mar1Apr_norm %>% 
+  filter(Region != "Alabama", Region != "Alaska", Region != "Arkansas", 
+  Region != "Iowa", Region != "Kentucky", Region != "Louisiana", 
+  Region != "Ohio", Region != "Oklahoma", Region != "Tennessee", 
+  Region != "Texas", Region != "West Virginia")
+
+COVID1Apr1Mayunrestr_norm <- COVID1Apr1May_norm %>% 
+  filter(Region != "Alabama", Region != "Alaska", Region != "Arkansas", 
+  Region != "Iowa", Region != "Kentucky", Region != "Louisiana", 
+  Region != "Ohio", Region != "Oklahoma", Region != "Tennessee", 
+  Region != "Texas", Region != "West Virginia")
+```
+
+```{r}
+#jpeg('RegionxActiveusersrestr1Mar1Aprnorm.jpg')
+ggplot(COVID1Mar1Aprrestr_norm, aes(x = Region, y = Active_users_norm)) +
+  geom_bar(stat = "identity", fill = "turquoise4") + 
+  labs(x = "User location", y = "Active users per 100,000 people", 
+  title = "SA app use in US states with COVID-related abortion restrictions
+  (1 Mar 2020 - 1 Apr 2020), normalized by 2019 state population 
+  estimates")
+
+#jpeg('RegionxUserengagementrestr1Mar1Aprnorm.jpg')
+ggplot(COVID1Mar1Aprrestr_norm, aes(x = Region, y = User_engagement_norm)) + 
+  geom_bar(stat = "identity", fill = "slategrey") + labs(x = "User location",
+  y = "User engagement (sec) per 100,000 people", 
+  title = "SA app use in US states with COVID-related abortion restrictions 
+  (1 Mar 2020 - 1 Apr 2020), normalized by 2019 state population 
+  estimates")
+
+#jpeg('RegionxActiveusersrestr1Apr1Maynorm.jpg')
+ggplot(COVID1Apr1Mayrestr_norm, aes(x = Region, y = Active_users_norm)) + 
+  geom_bar(stat = "identity", fill = "turquoise4") + 
+  labs(x = "User location", y = "Active users per 100,000 people", 
+  title = "SA app use in US states with COVID-related abortion restrictions
+  (1 Apr 2020 - 1 May 2020), normalized by 2019 state population 
+  estimates")
+
+#jpeg('RegionxUserengagementrestr1Apr1Maynorm.jpg')
+ggplot(COVID1Apr1Mayrestr_norm, aes(x = Region, y = User_engagement_norm)) + 
+  geom_bar(stat = "identity", fill = "slategrey") + labs(x = "User location",
+  y = "User engagement (sec) per 100,000 people", 
+  title = "SA app use in US states with COVID-related abortion restrictions 
+  (1 Apr 2020 - 1 May 2020), normalized by 2019 state population 
+  estimates")
+```
+
+```{r}
+#jpeg('RegionxActiveusersunrestr1Mar1Aprnorm.jpg')
+ggplot(COVID1Mar1Aprunrestr_norm, aes(x = Region, y = Active_users_norm)) + 
+  geom_bar(stat = "identity", fill = "turquoise4") + 
+  labs(x = "User location", y = "Active users per 100,000 people", 
+  title = "SA app use in US states without COVID-related abortion restrictions 
+  (1 Mar 2020 - 1 Apr 2020), normalized by 2019 state population 
+  estimates") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+#jpeg('RegionxUserengagementunrestr1Mar1Aprnorm.jpg')
+ggplot(COVID1Mar1Aprunrestr_norm, aes(x = Region, y = User_engagement_norm)) + 
+  geom_bar(stat = "identity", fill = "slategrey") + labs(x = "User location",
+  y = "User engagement (sec) per 100,000 people", 
+  title = "SA app use in US states without COVID-related abortion restrictions 
+  (1 Mar 2020 - 1 Apr 2020), normalized by 2019 state population 
+  estimates") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+#jpeg('RegionxActiveusersunrestr1Apr1Maynorm.jpg')
+ggplot(COVID1Apr1Mayunrestr_norm, aes(x = Region, y = Active_users_norm)) + 
+  geom_bar(stat = "identity", fill = "turquoise4") + 
+  labs(x = "User location", y = "Active users per 100,000 people", 
+  title = "SA app use in US states without COVID-related abortion restrictions 
+  (1 Apr 2020 - 1 May 2020), normalized by 2019 state population 
+  estimates") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+#jpeg('RegionxUserengagementunrestr1Apr1Maynorm.jpg')
+ggplot(COVID1Apr1Mayunrestr_norm, aes(x = Region, y = User_engagement_norm)) + 
+  geom_bar(stat = "identity", fill = "slategrey") + labs(x = "User location",
+  y = "User engagement (sec) per 100,000 people", 
+  title = "SA app use in US states without COVID-related abortion restrictions 
+  (1 Apr 2020 - 1 May 2020), normalized by 2019 state population 
+  estimates") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+```
+
+
+\newpage
+**5. SA app usage in Texas relative to COVID-related abortion restrictions**
+```{r}
+COVIDTX1 <- read.csv("COVID TX 4Mar20-21Mar20.csv", skip = 1, 
+  head = FALSE, sep = ",")
+COVIDTX2 <- read.csv("COVID TX 21Mar20-13Apr20.csv", skip = 1, 
+  head = FALSE, sep = ",")
+COVIDTX3 <- read.csv("COVID TX 13Apr20-20Apr20.csv", skip = 1, 
+  head = FALSE, sep = ",")
+```
+
+```{r}
+#columns renamed
+colnames(COVIDTX1) <- c("Page_title_and_screen_name",	"Active_users",
+  "Screen_views_per_user",	"User_engagement",	"Active_users1",
+  "Screen_views_per_user1",	"User_engagement1")
+
+colnames(COVIDTX2) <- c("Page_title_and_screen_name",	"Active_users",
+  "Screen_views_per_user",	"User_engagement",	"Active_users1",
+  "Screen_views_per_user1",	"User_engagement1")
+
+colnames(COVIDTX3) <- c("Page_title_and_screen_name",	"Active_users",
+  "Screen_views_per_user",	"User_engagement",	"Active_users1",
+  "Screen_views_per_user1",	"User_engagement1")
+```
+
+```{r}
+#duplicate columns removed from datasets
+COVIDTX1 <- COVIDTX1 %>% 
+  select(Page_title_and_screen_name, Active_users, Screen_views_per_user, 
+  User_engagement)
+
+COVIDTX2 <- COVIDTX2 %>% 
+  select(Page_title_and_screen_name, Active_users, Screen_views_per_user, 
+  User_engagement)
+
+COVIDTX3 <- COVIDTX3 %>% 
+  select(Page_title_and_screen_name, Active_users, Screen_views_per_user, 
+  User_engagement)
+```
+
+```{r}
+#header rows removed from dataset
+COVIDTX1 <- COVIDTX1 %>% 
+  filter(Page_title_and_screen_name != "(not set)", 
+  Page_title_and_screen_name != "# SA app", 
+  Page_title_and_screen_name != 
+  "# COVID TX 4Mar20-21Mar20-COVID TX 4Mar20-21Mar20", 
+  Page_title_and_screen_name != "# 20200304-20200321", 
+  Page_title_and_screen_name != "# ----------------------------------------",
+  Page_title_and_screen_name != "Segment", 
+  Page_title_and_screen_name != "Device category", 
+  Page_title_and_screen_name != "", 
+  Page_title_and_screen_name != "Grand total", 
+  Page_title_and_screen_name != "Page title and screen name")
+```
+
+```{r}
+#header rows removed from dataset
+COVIDTX2 <- COVIDTX2 %>% 
+  filter(Page_title_and_screen_name != "(not set)", 
+  Page_title_and_screen_name != "# SA app", 
+  Page_title_and_screen_name != 
+  "# COVID TX 21Mar20-13Apr20 (DB)-COVID TX 21Mar20-13Apr20", 
+  Page_title_and_screen_name != "# 20200321-20200413", 
+  Page_title_and_screen_name != "# ----------------------------------------",
+  Page_title_and_screen_name != "Segment", 
+  Page_title_and_screen_name != "Device category", 
+  Page_title_and_screen_name != "", 
+  Page_title_and_screen_name != "Grand total", 
+  Page_title_and_screen_name != "Page title and screen name")
+```
+
+```{r}
+#header rows removed from dataset
+COVIDTX3 <- COVIDTX3 %>% 
+  filter(Page_title_and_screen_name != "(not set)", 
+  Page_title_and_screen_name != "# SA app", 
+  Page_title_and_screen_name != 
+  "# COVID TX 13Apr20-20Apr20 (DB)-COVID TX 13Apr20-20Apr20", 
+  Page_title_and_screen_name != "# 20200413-20200420", 
+  Page_title_and_screen_name != "# ----------------------------------------",
+  Page_title_and_screen_name != "Segment", 
+  Page_title_and_screen_name != "Device category", 
+  Page_title_and_screen_name != "", 
+  Page_title_and_screen_name != "Grand total", 
+  Page_title_and_screen_name != "Page title and screen name")
+```
+
+```{r}
+#checking whether R recognizes numerical data in dataset as numbers
+typeof(COVIDTX1$Active_users)
+typeof(COVIDTX1$Screen_views_per_user)
+typeof(COVIDTX1$User_engagement)
+```
+
+```{r}
+#coerce to numeric
+COVIDTX1$Active_users <- as.numeric(COVIDTX1$Active_users)
+COVIDTX1$Screen_views_per_user <- 
+  as.numeric(COVIDTX1$Screen_views_per_user)
+COVIDTX1$User_engagement <- as.numeric(COVIDTX1$User_engagement)
+```
+
+```{r}
+#recheck
+typeof(COVIDTX1$Active_users)
+typeof(COVIDTX1$Screen_views_per_user)
+typeof(COVIDTX1$User_engagement)
+```
+
+```{r}
+#calculate summary for COVIDTX1 dataset
+TX1_active_users <- sum(subset(COVIDTX1)$Active_users) 
+TX1_user_engagement <- mean(subset(COVIDTX1)
+  $User_engagement)
+TX1_results <- c(TX1_active_users, TX1_user_engagement)
+```
+
+```{r}
+#normalize results by length of time of COVIDTX1
+TX1_time_a <- as.Date("04Mar2020", format = "%d%b%Y")
+TX1_time_b <- as.Date("21Mar2020", format = "%d%b%Y")
+TX1_time <- as.double(TX1_time_b - TX1_time_a)
+TX1_active_users_day <- TX1_active_users/TX1_time
+TX1_user_engagement_day <- TX1_user_engagement/TX1_time
+```
+
+
+```{r}
+#coerce to numeric
+COVIDTX2$Active_users <- as.numeric(COVIDTX2$Active_users)
+COVIDTX2$Screen_views_per_user <- 
+  as.numeric(COVIDTX2$Screen_views_per_user)
+COVIDTX2$User_engagement <- as.numeric(COVIDTX2$User_engagement)
+```
+
+```{r}
+#calculate summary for COVIDTX2 dataset
+TX2_active_users <- sum(subset(COVIDTX2)$Active_users) 
+TX2_user_engagement <- mean(subset(COVIDTX2)
+  $User_engagement)
+TX2_results <- c(TX2_active_users, TX2_user_engagement)
+```
+
+```{r}
+#normalize results by length of time of COVIDTX2
+TX2_time_a <- as.Date("21Mar2020", format = "%d%b%Y")
+TX2_time_b <- as.Date("13Apr2020", format = "%d%b%Y")
+TX2_time <- as.double(TX2_time_b - TX2_time_a)
+TX2_active_users_day <- TX2_active_users/TX2_time
+TX2_user_engagement_day <- TX2_user_engagement/TX2_time
+```
+
+```{r}
+#coerce to numeric
+COVIDTX3$Active_users <- as.numeric(COVIDTX3$Active_users)
+COVIDTX3$Screen_views_per_user <- 
+  as.numeric(COVIDTX3$Screen_views_per_user)
+COVIDTX3$User_engagement <- as.numeric(COVIDTX3$User_engagement)
+```
+
+```{r}
+#calculate summary for COVIDTX3 dataset
+TX3_active_users <- sum(subset(COVIDTX3)$Active_users) 
+TX3_user_engagement <- mean(subset(COVIDTX3)
+  $User_engagement)
+TX3_results <- c(TX3_active_users, TX3_user_engagement)
+```
+
+```{r}
+#normalize results by length of time of COVIDTX3
+TX3_time_a <- as.Date("13Apr2020", format = "%d%b%Y")
+TX3_time_b <- as.Date("20Apr2020", format = "%d%b%Y")
+TX3_time <- as.double(TX3_time_b - TX3_time_a)
+TX3_active_users_day <- TX3_active_users/TX3_time
+TX3_user_engagement_day <- TX3_user_engagement/TX3_time
+```
+
+
+```{r}
+COVIDTX <- rbind(TX1_results, TX2_results, TX3_results)
+COVIDTX <- as.data.frame(COVIDTX)
+colnames(COVIDTX) = c("Page_use", "User_engagement")
+rownames(COVIDTX) = c("4Mar20-21Mar20", "21Mar20-13Apr20", "13Apr20-20Apr20")
+write.csv(COVIDTX, "COVIDTX.csv")
+```
+
+```{r}
+COVIDTXdf <- read.csv("COVIDTX.csv")
+colnames(COVIDTXdf) = c("Time_period", "Page_use", "User_engagement")
+```
+
+```{r}
+install.packages("forcats")
+```
+```{r}
+library(forcats)
+```
+
+```{r}
+COVIDTXdf <- COVIDTXdf %>% mutate(Time_period = fct_relevel(Time_period,
+  "4Mar20-21Mar20", "21Mar20-13Apr20", "13Apr20-20Apr20"))
+```
+
+```{r}
+mycolors <- c("limegreen", "red", "yellow")
+names(mycolors) <- levels(factor(levels(COVIDTXdf$Time_period)))
+```
+
+```{r}
+COVIDTXdf_normalize <- COVIDTXdf %>% mutate(Total_page_use_per_day = 
+  c(TX1_active_users_day, TX2_active_users_day, TX3_active_users_day), 
+  User_engagement_per_day = c(TX1_user_engagement_day, TX2_user_engagement_day, 
+  TX3_user_engagement_day))
+write.csv(COVIDTXdf_normalize, "COVIDTXdf_normalize.csv")
+```
+
+```{r}
+#jpeg('COVIDTXdfPageUse3.jpg')
+ggplot(COVIDTXdf_normalize, aes(x = Time_period, 
+  y = Total_page_use_per_day)) + 
+  geom_bar(stat = "identity", fill = mycolors) + labs(x = "Time period", 
+  y = "Total page use per day", 
+  title = "SA app total page use per day, Texas")
+
+#jpeg('COVIDTXdfUserEngagement3.jpg')
+ggplot(COVIDTXdf_normalize, aes(x = Time_period, 
+  y = User_engagement_per_day)) + 
+  geom_bar(stat = "identity", fill = mycolors) + labs(x = "Time period", 
+  y = "Total user engagement (sec) per day", 
+  title = "SA app total user engagement per day, Texas")
+```
+\newpage
+**6. Dani can't stop messing with Texas**
+```{r}
+USuser_pages_JanJun_TX <- USuser_pages_JanJun %>% filter(Region == "Texas")
+```
+
+```{r}
+#jpeg('USuser_pages_JanJun_TX.jpg')
+ggplot(USuser_pages_JanJun_TX, aes(x = City, y = Active_users)) + 
+  geom_bar(stat = "identity", fill = "darkorange3") + 
+  labs(x = "City", y = "Total number active users", 
+  title = "SA app use in Texas cities (1 Jan 2020 - 30 Jun 2020)") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+```
+
